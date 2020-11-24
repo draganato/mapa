@@ -1,0 +1,15 @@
+{% extends "layout.html" %}
+
+{% block body %}
+ {% for i in podaci %}
+    {% if i.uslov %}
+        <p> TAČKA {{i.tacka}} PRIPADA POLIGONU {{i.poligon}}</p>
+    {% else %}
+        <p> TAČKA {{i.tacka}} NE PRIPADA POLIGONU {{i.poligon}} </p>
+    {% endif %}
+{% empty %}
+  <p>Nema kreiranih analiza</p>
+{% endfor %}
+
+
+{% endblock %}

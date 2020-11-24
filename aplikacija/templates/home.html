@@ -1,0 +1,90 @@
+{% extends "layout.html" %}
+
+{% block body%}
+<div id='container1' >
+    <div id='js-map' class='map' style="height: 400px; width:60%; display: inline-block;"></div>
+    <div style="width: 35%; height: 400px; display: inline-block; overflow: auto;">
+        <table id="tacka">
+            <tr>
+                <th>Tačka</th>
+                <th></th>
+            </tr>
+            <tr>
+                <th>x:</th>
+                <th>y:</th>
+            </tr>
+        </table>
+        <table id="poligon">
+            <tr>
+                <th>Poligon</th>
+                <th></th>
+            </tr>
+            <tr>
+                <th>x:</th>
+                <th>y:</th>
+            </tr>
+        </table>
+        <button id='provjera' style="float: right;">Save</button><br>
+    </div>
+
+</div>
+
+<form  method="POST"  id="form"  style="display: none;">
+    {% csrf_token %}
+    {{form1}}
+    <input type="submit">
+</form>
+
+<script>
+    layerlist = [ new ol.layer.Tile({
+        source: new ol.source.OSM()
+    })];
+    const map = new ol.Map({
+        view: new ol.View({
+            center: [1914866.827507854,	5584804.9745491035],
+            zoom: 7
+        }),
+        layers: layerlist,
+        target: 'js-map'
+    })
+
+    var koordinate = [];  
+
+    map.on('click', function(e){
+        koordinate.push(e.coordinate);
+        if(koordinate.length == 1){
+            let row = document.getElementById('tacka').insertRow(2);
+            row.insertCell(0).innerHTML=koordinate[0][0];
+            row.insertCell(1).innerHTML=koordinate[0][1];
+        }
+        else{
+            let row = document.getElementById('poligon').insertRow(koordinate.length);
+            row.insertCell(0).innerHTML=koordinate[koordinate.length-1][0];
+            row.insertCell(1).innerHTML=koordinate[koordinate.length-1][1];
+        }
+    })
+  
+   
+    document.getElementById('provjera').onclick = function(){
+        koordinate.push(koordinate[1]);
+        let lin_ring = koordinate.slice(1);
+        let polygon = new ol.geom.Polygon([lin_ring]);
+        let uslov = polygon.intersectsCoordinate(koordinate[0]);
+        let poli="";
+        for (i=0; i<lin_ring.length-1; i++){
+            poli+="["+lin_ring[i]+"],";
+            }
+        poli+="["+lin_ring[lin_ring.length-1]+"]";
+        document.getElementById('id_uslov').checked=uslov;
+        document.getElementById('id_tacka').value="["+koordinate[0]+"]";
+        document.getElementById('id_poligon').value=poli;
+        
+        koordinate=[];
+        document.getElementById("tacka").deleteRow(2);
+        for(i=0; i<lin_ring.length-1; i++ ){
+            document.getElementById("poligon").deleteRow(2);
+        }
+        document.getElementById('form').submit();
+    }
+</script>
+{% endblock %}
